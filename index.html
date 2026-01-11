@@ -2,7 +2,7 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
-  <title>Cirkel verdelen in punten</title>
+  <title>Cirkel verdelen in taartpunten</title>
   <style>
     html, body {
       margin: 0;
@@ -21,22 +21,53 @@
     .controls {
       position: fixed;
       top: 10px;
-      left: 10px;
+      right: 10px;
       z-index: 10;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.97);
       border: 1px solid #cccccc;
-      border-radius: 8px;
-      padding: 8px 12px;
+      border-radius: 12px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 13px;
+      width: 280px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .controls h2 {
+      margin: 0 0 4px 0;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .controls h3 {
+      margin: 4px 0 2px 0;
+      font-size: 13px;
+      font-weight: 600;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 2px;
+    }
+
+    .row {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 13px;
+      gap: 6px;
       flex-wrap: wrap;
-      max-width: 450px;
+    }
+
+    .row label {
+      white-space: nowrap;
     }
 
     .controls input[type="number"] {
       width: 80px;
+      padding: 4px;
+      font-size: 13px;
+    }
+
+    .controls input[type="text"] {
+      flex: 1;
       padding: 4px;
       font-size: 13px;
     }
@@ -48,45 +79,98 @@
       border-radius: 6px;
       border: 1px solid #333333;
       background: #f5f5f5;
+      transition: transform 0.05s ease, box-shadow 0.05s ease, filter 0.1s ease;
     }
 
     .controls button:hover {
-      filter: brightness(0.95);
+      filter: brightness(0.96);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    }
+
+    .controls button:active {
+      transform: translateY(1px);
+      box-shadow: none;
     }
 
     .toggle-group {
       display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .toggle-option {
+      display: flex;
       align-items: center;
       gap: 4px;
-      white-space: nowrap;
+      font-size: 12px;
     }
 
     .controls input[type="file"] {
       font-size: 12px;
     }
+
+    .hint {
+      font-size: 11px;
+      color: #555555;
+    }
   </style>
 </head>
 <body>
   <div class="controls">
-    <label for="pointsInput">Aantal punten:</label>
-    <input type="number" id="pointsInput" min="1" value="24" />
+    <h2>Cirkel instellen</h2>
 
-    <button id="generateBtn">Genereer</button>
-    <button id="saveBtn">Sla op</button>
-
-    <div class="toggle-group">
-      <input type="checkbox" id="pieCheckbox" />
-      <label for="pieCheckbox">Regenboog taartpunten</label>
+    <div class="row">
+      <label for="pointsInput">Aantal punten:</label>
+      <input type="number" id="pointsInput" min="1" value="24" />
     </div>
 
-    <div class="toggle-group">
+    <div class="row">
+      <button id="generateBtn">Genereer</button>
+      <button id="saveBtn">Sla op</button>
+    </div>
+
+    <h3>Kleurmodus</h3>
+    <div class="toggle-group" id="colorModeGroup">
+      <label class="toggle-option">
+        <input type="radio" name="colorMode" value="white" checked />
+        Witte cirkel
+      </label>
+      <label class="toggle-option">
+        <input type="radio" name="colorMode" value="rainbow" />
+        Regenboog cirkel
+      </label>
+      <label class="toggle-option">
+        <input type="radio" name="colorMode" value="blue" />
+        Lichtblauw en wit om en om
+      </label>
+      <label class="toggle-option">
+        <input type="radio" name="colorMode" value="yellow" />
+        Geel en lichtgeel om en om
+      </label>
+      <label class="toggle-option">
+        <input type="radio" name="colorMode" value="green" />
+        Groen en lichtgroen om en om
+      </label>
+    </div>
+
+    <h3>Achtergrond</h3>
+    <div class="row">
       <input type="checkbox" id="transparentCheckbox" />
-      <label for="transparentCheckbox">Achtergrond transparant</label>
+      <label for="transparentCheckbox">Achtergrond transparant (PNG)</label>
     </div>
 
-    <div>
-      <label for="textFileInput">Teksten (.txt):</label>
+    <h3>Woorden</h3>
+    <div class="row">
+      <input type="text" id="wordInput" placeholder="Nieuw woord" />
+      <button id="addWordBtn">Voeg toe</button>
+    </div>
+    <div class="row">
+      <label for="textFileInput">Lijst uploaden (.txt)</label>
       <input type="file" id="textFileInput" accept=".txt" />
+    </div>
+    <div class="hint">
+      • Elke regel in het tekstbestand wordt een taartpunt.  
+      • Klik op een taartpunt om het woord te verwijderen.
     </div>
   </div>
 
@@ -99,13 +183,15 @@
     const pointsInput = document.getElementById("pointsInput");
     const generateBtn = document.getElementById("generateBtn");
     const saveBtn = document.getElementById("saveBtn");
-    const pieCheckbox = document.getElementById("pieCheckbox");
     const transparentCheckbox = document.getElementById("transparentCheckbox");
     const textFileInput = document.getElementById("textFileInput");
+    const wordInput = document.getElementById("wordInput");
+    const addWordBtn = document.getElementById("addWordBtn");
+    const colorModeGroup = document.getElementById("colorModeGroup");
 
-    let usePie = false;
     let useTransparentBackground = false;
     let labels = [];
+    let colorMode = "white";
 
     function resizeCanvas() {
       canvas.width = window.innerWidth;
@@ -115,14 +201,16 @@
 
     window.addEventListener("resize", resizeCanvas);
 
-    pieCheckbox.addEventListener("change", () => {
-      usePie = pieCheckbox.checked;
-      drawCircle();
-    });
-
     transparentCheckbox.addEventListener("change", () => {
       useTransparentBackground = transparentCheckbox.checked;
       drawCircle();
+    });
+
+    colorModeGroup.addEventListener("change", (event) => {
+      if (event.target.name === "colorMode") {
+        colorMode = event.target.value;
+        drawCircle();
+      }
     });
 
     textFileInput.addEventListener("change", (event) => {
@@ -137,18 +225,80 @@
           .split(/\r?\n/)
           .map(line => line.trim())
           .filter(line => line.length > 0);
+
+        if (labels.length > 0) {
+          pointsInput.value = labels.length;
+        }
         drawCircle();
       };
       reader.readAsText(file, "utf-8");
     });
 
-    function drawCircle() {
-      const n = parseInt(pointsInput.value, 10);
-
-      if (!Number.isFinite(n) || n < 1) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function addWordFromInput() {
+      const text = wordInput.value.trim();
+      if (text.length === 0) {
         return;
       }
+      labels.push(text);
+      pointsInput.value = labels.length;
+      wordInput.value = "";
+      drawCircle();
+    }
+
+    addWordBtn.addEventListener("click", addWordFromInput);
+
+    wordInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        addWordFromInput();
+      }
+    });
+
+    function getSegmentCount() {
+      if (labels.length > 0) {
+        return labels.length;
+      }
+      const n = parseInt(pointsInput.value, 10);
+      if (!Number.isFinite(n) || n < 1) {
+        return 1;
+      }
+      return n;
+    }
+
+    function getColorsForMode(index) {
+      if (colorMode === "white") {
+        return "#ffffff";
+      }
+
+      if (colorMode === "rainbow") {
+        const rainbow = [
+          "#FF0000",
+          "#FF7F00",
+          "#FFFF00",
+          "#00FF00",
+          "#0000FF",
+          "#4B0082",
+          "#8B00FF"
+        ];
+        return rainbow[index % rainbow.length];
+      }
+
+      if (colorMode === "blue") {
+        return index % 2 === 0 ? "#ADD8E6" : "#FFFFFF";
+      }
+
+      if (colorMode === "yellow") {
+        return index % 2 === 0 ? "#FFD700" : "#FFFACD";
+      }
+
+      if (colorMode === "green") {
+        return index % 2 === 0 ? "#90EE90" : "#E0FFE0";
+      }
+
+      return "#ffffff";
+    }
+
+    function drawCircle() {
+      const n = getSegmentCount();
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -167,84 +317,76 @@
       ctx.lineWidth = 2;
       ctx.strokeStyle = "#000000";
 
-      const rainbow = [
-        "#FF0000",
-        "#FF7F00",
-        "#FFFF00",
-        "#00FF00",
-        "#0000FF",
-        "#4B0082",
-        "#8B00FF"
-      ];
+      // Taartpunten tekenen
+      for (let i = 0; i < n; i++) {
+        const startAngle = (i / n) * Math.PI * 2;
+        const endAngle = ((i + 1) / n) * Math.PI * 2;
+        const color = getColorsForMode(i);
 
-      if (usePie) {
-        for (let i = 0; i < n; i++) {
-          const startAngle = (i / n) * Math.PI * 2;
-          const endAngle = ((i + 1) / n) * Math.PI * 2;
-          const color = rainbow[i % rainbow.length];
-
-          // Taartpunt
-          ctx.beginPath();
-          ctx.moveTo(cx, cy);
-          ctx.arc(cx, cy, radius, startAngle, endAngle);
-          ctx.closePath();
-          ctx.fillStyle = color;
-          ctx.fill();
-          ctx.stroke();
-
-          // Tekst in de taartpunt (indien labels aanwezig)
-          if (labels.length > 0) {
-            const text = labels[i % labels.length];
-            const midAngle = (startAngle + endAngle) / 2;
-
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.rotate(midAngle);
-
-            const fontSize = Math.max(14, radius * 0.10);
-            ctx.font = `bold ${fontSize}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-            ctx.fillStyle = "#000000";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-
-            // Plaats tekst richting centrum
-            const textRadius = radius * 0.6;
-            // we draaien de tekst zodat hij grofweg naar het centrum gericht is
-            ctx.translate(0, -textRadius);
-            ctx.rotate(Math.PI);
-
-            ctx.fillText(text, 0, 0);
-            ctx.restore();
-          }
-        }
-
-        // Rand van de cirkel
         ctx.beginPath();
-        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
         ctx.stroke();
-      } else {
-        // Gewone cirkel met lijnen vanuit het middelpunt
-        if (!useTransparentBackground) {
-          // achtergrond is al gevuld, dus alleen cirkel en lijnen
-        }
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        ctx.stroke();
+      }
 
+      // Rand cirkel
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Woorden aan de buitenkant
+      if (n > 0 && labels.length > 0) {
         for (let i = 0; i < n; i++) {
-          const angle = (i / n) * Math.PI * 2;
-          const x = cx + radius * Math.cos(angle);
-          const y = cy + radius * Math.sin(angle);
-
-          ctx.beginPath();
-          ctx.moveTo(cx, cy);
-          ctx.lineTo(x, y);
-          ctx.stroke();
+          const text = labels[i % labels.length];
+          drawWordInSlice(ctx, text, i, n, cx, cy, radius);
         }
       }
     }
 
-    function drawSquareExport(ctxExport, size, n) {
+    function drawWordInSlice(context, text, index, segments, cx, cy, radius) {
+      if (!text || text.length === 0) {
+        return;
+      }
+
+      const startAngle = (index / segments) * Math.PI * 2;
+      const endAngle = ((index + 1) / segments) * Math.PI * 2;
+      const midAngle = (startAngle + endAngle) / 2;
+
+      const textRadius = radius * 0.88; // vlak bij de rand
+      const wedgeWidth = (endAngle - startAngle) * textRadius;
+
+      // Eerste schatting voor lettergrootte
+      let baseSize = Math.max(12, radius * 0.12);
+      context.save();
+      context.font = `bold ${baseSize}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      const measured = context.measureText(text);
+      const textWidth = measured.width || 1;
+
+      const targetWidth = wedgeWidth * 0.9;
+      const factor = targetWidth / textWidth;
+      let fontSize = baseSize * factor;
+
+      fontSize = Math.max(10, Math.min(fontSize, radius * 0.2));
+
+      context.font = `bold ${fontSize}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+
+      context.translate(cx, cy);
+      context.rotate(midAngle + Math.PI / 2);
+      context.translate(0, -textRadius);
+
+      context.fillStyle = "#000000";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+
+      context.fillText(text, 0, 0);
+
+      context.restore();
+    }
+
+    function drawSquareExport(ctxExport, size, segments) {
       ctxExport.clearRect(0, 0, size, size);
 
       const cx = size / 2;
@@ -259,70 +401,28 @@
       ctxExport.lineWidth = 2;
       ctxExport.strokeStyle = "#000000";
 
-      const rainbow = [
-        "#FF0000",
-        "#FF7F00",
-        "#FFFF00",
-        "#00FF00",
-        "#0000FF",
-        "#4B0082",
-        "#8B00FF"
-      ];
-
-      if (usePie) {
-        for (let i = 0; i < n; i++) {
-          const startAngle = (i / n) * Math.PI * 2;
-          const endAngle = ((i + 1) / n) * Math.PI * 2;
-          const color = rainbow[i % rainbow.length];
-
-          ctxExport.beginPath();
-          ctxExport.moveTo(cx, cy);
-          ctxExport.arc(cx, cy, radius, startAngle, endAngle);
-          ctxExport.closePath();
-          ctxExport.fillStyle = color;
-          ctxExport.fill();
-          ctxExport.stroke();
-
-          if (labels.length > 0) {
-            const text = labels[i % labels.length];
-            const midAngle = (startAngle + endAngle) / 2;
-
-            ctxExport.save();
-            ctxExport.translate(cx, cy);
-            ctxExport.rotate(midAngle);
-
-            const fontSize = Math.max(14, radius * 0.10);
-            ctxExport.font = `bold ${fontSize}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-            ctxExport.fillStyle = "#000000";
-            ctxExport.textAlign = "center";
-            ctxExport.textBaseline = "middle";
-
-            const textRadius = radius * 0.6;
-            ctxExport.translate(0, -textRadius);
-            ctxExport.rotate(Math.PI);
-
-            ctxExport.fillText(text, 0, 0);
-            ctxExport.restore();
-          }
-        }
+      for (let i = 0; i < segments; i++) {
+        const startAngle = (i / segments) * Math.PI * 2;
+        const endAngle = ((i + 1) / segments) * Math.PI * 2;
+        const color = getColorsForMode(i);
 
         ctxExport.beginPath();
-        ctxExport.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctxExport.moveTo(cx, cy);
+        ctxExport.arc(cx, cy, radius, startAngle, endAngle);
+        ctxExport.closePath();
+        ctxExport.fillStyle = color;
+        ctxExport.fill();
         ctxExport.stroke();
-      } else {
-        ctxExport.beginPath();
-        ctxExport.arc(cx, cy, radius, 0, Math.PI * 2);
-        ctxExport.stroke();
+      }
 
-        for (let i = 0; i < n; i++) {
-          const angle = (i / n) * Math.PI * 2;
-          const x = cx + radius * Math.cos(angle);
-          const y = cy + radius * Math.sin(angle);
+      ctxExport.beginPath();
+      ctxExport.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctxExport.stroke();
 
-          ctxExport.beginPath();
-          ctxExport.moveTo(cx, cy);
-          ctxExport.lineTo(x, y);
-          ctxExport.stroke();
+      if (segments > 0 && labels.length > 0) {
+        for (let i = 0; i < segments; i++) {
+          const text = labels[i % labels.length];
+          drawWordInSlice(ctxExport, text, i, segments, cx, cy, radius);
         }
       }
     }
@@ -336,8 +436,8 @@
     });
 
     saveBtn.addEventListener("click", () => {
-      const n = parseInt(pointsInput.value, 10);
-      if (!Number.isFinite(n) || n < 1) {
+      const segments = getSegmentCount();
+      if (!Number.isFinite(segments) || segments < 1) {
         return;
       }
 
@@ -347,10 +447,11 @@
       exportCanvas.height = size;
       const exportCtx = exportCanvas.getContext("2d");
 
-      drawSquareExport(exportCtx, size, n);
+      drawSquareExport(exportCtx, size, segments);
 
-      const safeN = Number.isFinite(n) && n > 0 ? n : "onbekend";
       const link = document.createElement("a");
+
+      const safeN = Number.isFinite(segments) && segments > 0 ? segments : "onbekend";
 
       if (useTransparentBackground) {
         link.download = `cirkel_${safeN}_punten.png`;
@@ -361,6 +462,49 @@
       }
 
       link.click();
+    });
+
+    // Klik op taartpunt om woord te verwijderen
+    canvas.addEventListener("click", (event) => {
+      if (labels.length === 0) {
+        return;
+      }
+
+      const rect = canvas.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const clickY = event.clientY - rect.top;
+
+      const dim = Math.min(canvas.width, canvas.height);
+      const offsetX = (canvas.width - dim) / 2;
+      const offsetY = (canvas.height - dim) / 2;
+      const cx = offsetX + dim / 2;
+      const cy = offsetY + dim / 2;
+      const radius = dim / 2 - 10;
+
+      const dx = clickX - cx;
+      const dy = clickY - cy;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > radius) {
+        return;
+      }
+
+      let angle = Math.atan2(dy, dx);
+      if (angle < 0) {
+        angle += Math.PI * 2;
+      }
+
+      const segments = labels.length;
+      const sliceAngle = (Math.PI * 2) / segments;
+      const index = Math.floor(angle / sliceAngle);
+
+      if (index >= 0 && index < labels.length) {
+        labels.splice(index, 1);
+        if (labels.length > 0) {
+          pointsInput.value = labels.length;
+        }
+        drawCircle();
+      }
     });
 
     resizeCanvas();
