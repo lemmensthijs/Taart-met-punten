@@ -9,7 +9,7 @@
       padding: 0;
       height: 100%;
       background: #000000;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Arial, sans-serif;
     }
 
     #circleCanvas {
@@ -63,12 +63,14 @@
       width: 80px;
       padding: 4px;
       font-size: 13px;
+      font-family: Arial, sans-serif;
     }
 
     .controls input[type="text"] {
       flex: 1;
       padding: 4px;
       font-size: 13px;
+      font-family: Arial, sans-serif;
     }
 
     .controls button {
@@ -79,6 +81,7 @@
       border: 1px solid #333333;
       background: #f5f5f5;
       transition: transform 0.05s ease, box-shadow 0.05s ease, filter 0.1s ease;
+      font-family: Arial, sans-serif;
     }
 
     .controls button:hover {
@@ -166,6 +169,7 @@
       align-items: center;
       justify-content: center;
       z-index: 30;
+      font-family: Arial, sans-serif;
     }
 
     #helpBox {
@@ -177,6 +181,7 @@
       overflow-y: auto;
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
       font-size: 13px;
+      font-family: Arial, sans-serif;
     }
 
     #helpBox h2 {
@@ -194,6 +199,15 @@
     #closeHelpBtn {
       margin-top: 10px;
       display: inline-block;
+    }
+
+    .footer {
+      font-size: 11px;
+      color: #777777;
+      text-align: center;
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px solid #e0e0e0;
     }
   </style>
 </head>
@@ -277,6 +291,10 @@
       - Elke regel in het tekstbestand wordt een eigen taartpunt.  
       - Als er woorden zijn, volgt het aantal punten altijd het aantal woorden.  
       - Je kunt ook op een taartpunt in de cirkel klikken om het woord te verwijderen.
+    </div>
+
+    <div class="footer">
+      Gemaakt door EduBOLT.
     </div>
   </div>
 
@@ -474,10 +492,9 @@
       const midAngle = (startAngle + endAngle) / 2;
 
       const textRadius = radius * 0.88;
-      // eerste schatting
       let baseSize = Math.max(10, radius * 0.12);
       context.save();
-      context.font = `${baseSize}px bold system-ui`;
+      context.font = `${baseSize}px bold Arial`;
       const metrics = context.measureText(text);
       const textWidth = metrics.width || 1;
 
@@ -491,9 +508,8 @@
       fontSize = Math.min(fontSize, radius * 0.22);
       fontSize = Math.max(fontSize, 10);
 
-      context.font = `${fontSize}px bold system-ui`;
+      context.font = `${fontSize}px bold Arial`;
 
-      // meet nogmaals met definitieve fontsize
       const chars = [...text];
       const charWidths = chars.map(ch => context.measureText(ch).width);
       const totalWidth = charWidths.reduce((a, b) => a + b, 0) || 1;
@@ -589,7 +605,6 @@
       link.click();
     });
 
-    // Klik in cirkel om woord te verwijderen
     canvas.addEventListener("click", (e) => {
       if (labels.length === 0) return;
 
@@ -653,7 +668,6 @@
       });
     }
 
-    // Help overlay
     helpBtn.addEventListener("click", () => {
       helpOverlay.style.display = "flex";
     });
@@ -675,7 +689,6 @@
       }
     });
 
-    // init
     renderWordList();
     resizeCanvas();
   </script>
