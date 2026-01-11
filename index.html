@@ -8,7 +8,7 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      background: #ffffff;
+      background: #000000;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
@@ -16,13 +16,14 @@
       display: block;
       width: 100vw;
       height: 100vh;
+      background: #000000;
     }
 
     .controls {
       position: fixed;
       top: 10px;
       right: 10px;
-      z-index: 10;
+      z-index: 20;
       background: rgba(255, 255, 255, 0.97);
       border: 1px solid #cccccc;
       border-radius: 12px;
@@ -31,8 +32,10 @@
       flex-direction: column;
       gap: 10px;
       font-size: 13px;
-      width: 280px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 320px;
+      max-height: calc(100vh - 20px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
     }
 
     .controls h2 {
@@ -54,10 +57,6 @@
       align-items: center;
       gap: 6px;
       flex-wrap: wrap;
-    }
-
-    .row label {
-      white-space: nowrap;
     }
 
     .controls input[type="number"] {
@@ -92,12 +91,6 @@
       box-shadow: none;
     }
 
-    .toggle-group {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
     .toggle-option {
       display: flex;
       align-items: center;
@@ -105,19 +98,112 @@
       font-size: 12px;
     }
 
-    .controls input[type="file"] {
-      font-size: 12px;
-    }
-
     .hint {
       font-size: 11px;
       color: #555555;
     }
+
+    .word-list-container {
+      border: 1px solid #dddddd;
+      border-radius: 8px;
+      padding: 6px;
+      background: #fafafa;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-height: 60px;
+    }
+
+    .word-list-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: #333333;
+    }
+
+    .word-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 140px;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+
+    .word-list li {
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .word-list li:nth-child(odd) {
+      background: #f0f0f0;
+    }
+
+    .word-list li:nth-child(even) {
+      background: #ffffff;
+    }
+
+    .word-list li:hover {
+      background: #ffe0e0;
+    }
+
+    .word-index {
+      font-size: 10px;
+      color: #777777;
+      margin-right: 6px;
+    }
+
+    /* Help overlay */
+    #helpOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+    }
+
+    #helpBox {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 16px 18px;
+      max-width: 520px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+      font-size: 13px;
+    }
+
+    #helpBox h2 {
+      margin-top: 0;
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+
+    #helpBox ul {
+      padding-left: 18px;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+
+    #closeHelpBtn {
+      margin-top: 10px;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
+
   <div class="controls">
-    <h2>Cirkel instellen</h2>
+    <div class="row" style="justify-content: space-between;">
+      <h2>Cirkel instellen</h2>
+      <button id="helpBtn">Uitleg</button>
+    </div>
 
     <div class="row">
       <label for="pointsInput">Aantal punten:</label>
@@ -130,47 +216,87 @@
     </div>
 
     <h3>Kleurmodus</h3>
-    <div class="toggle-group" id="colorModeGroup">
+    <div id="colorModeGroup">
       <label class="toggle-option">
         <input type="radio" name="colorMode" value="white" checked />
         Witte cirkel
       </label>
       <label class="toggle-option">
         <input type="radio" name="colorMode" value="rainbow" />
-        Regenboog cirkel
+        Regenboog
       </label>
       <label class="toggle-option">
         <input type="radio" name="colorMode" value="blue" />
-        Lichtblauw en wit om en om
+        Lichtblauw en wit
       </label>
       <label class="toggle-option">
         <input type="radio" name="colorMode" value="yellow" />
-        Geel en lichtgeel om en om
+        Geel en lichtgeel
       </label>
       <label class="toggle-option">
         <input type="radio" name="colorMode" value="green" />
-        Groen en lichtgroen om en om
+        Groen en lichtgroen
+      </label>
+      <label class="toggle-option">
+        <input type="radio" name="colorMode" value="pastel1" />
+        Zacht roze en lichtgrijs
+      </label>
+      <label class="toggle-option">
+        <input type="radio" name="colorMode" value="pastel2" />
+        Zacht blauw en zacht groen
+      </label>
+      <label class="toggle-option">
+        <input type="radio" name="colorMode" value="sand" />
+        Zandkleur en licht zand
       </label>
     </div>
 
     <h3>Achtergrond</h3>
-    <div class="row">
+    <label class="toggle-option">
       <input type="checkbox" id="transparentCheckbox" />
-      <label for="transparentCheckbox">Achtergrond transparant (PNG)</label>
-    </div>
+      Transparant bij opslaan (PNG)
+    </label>
 
     <h3>Woorden</h3>
     <div class="row">
       <input type="text" id="wordInput" placeholder="Nieuw woord" />
       <button id="addWordBtn">Voeg toe</button>
     </div>
+
     <div class="row">
-      <label for="textFileInput">Lijst uploaden (.txt)</label>
+      <label for="textFileInput">Upload lijst (.txt)</label>
       <input type="file" id="textFileInput" accept=".txt" />
     </div>
+
+    <div class="word-list-container">
+      <div class="word-list-header">Woorden in de cirkel (klik om te verwijderen):</div>
+      <ul id="wordList" class="word-list"></ul>
+    </div>
+
     <div class="hint">
-      • Elke regel in het tekstbestand wordt een taartpunt.  
-      • Klik op een taartpunt om het woord te verwijderen.
+      - Elke regel in het tekstbestand wordt een eigen taartpunt.  
+      - Als er woorden zijn, volgt het aantal punten altijd het aantal woorden.  
+      - Je kunt ook op een taartpunt in de cirkel klikken om het woord te verwijderen.
+    </div>
+  </div>
+
+  <!-- Help overlay -->
+  <div id="helpOverlay">
+    <div id="helpBox">
+      <h2>Uitleg cirkel app</h2>
+      <p>Met deze app maak je een cirkel verdeeld in gelijke taartpunten, met kleuren en woorden langs de buitenrand.</p>
+      <ul>
+        <li><strong>Aantal punten</strong>: aantal segmenten als er geen woorden zijn. Als er woorden zijn, bepaalt de lijst met woorden het aantal punten.</li>
+        <li><strong>Genereer</strong>: tekent of ververst de cirkel met de huidige instellingen.</li>
+        <li><strong>Sla op</strong>: slaat een vierkante afbeelding op. Bij transparant vinkje is dit een PNG met transparante buitenrand, anders een JPG met witte achtergrond.</li>
+        <li><strong>Kleurmodus</strong>: kies de kleurstelling van de taartpunten. De woorden blijven gelijk.</li>
+        <li><strong>Transparant bij opslaan</strong>: bepaalt of de opgeslagen afbeelding een transparante achtergrond heeft. Op het scherm blijft de achtergrond zwart.</li>
+        <li><strong>Nieuw woord + Voeg toe</strong>: voeg een woord toe als extra taartpunt. Enter in het tekstvak werkt ook.</li>
+        <li><strong>Upload lijst (.txt)</strong>: elke niet lege regel wordt een woord en dus een eigen taartpunt.</li>
+        <li><strong>Woordenlijst</strong>: klik op een woord om het te verwijderen.</li>
+        <li><strong>Cirkel zelf</strong>: klik op een taartpunt om het bijbehorende woord te verwijderen.</li>
+      </ul>
+      <button id="closeHelpBtn">Sluiten</button>
     </div>
   </div>
 
@@ -188,17 +314,20 @@
     const wordInput = document.getElementById("wordInput");
     const addWordBtn = document.getElementById("addWordBtn");
     const colorModeGroup = document.getElementById("colorModeGroup");
+    const wordListElement = document.getElementById("wordList");
+    const helpBtn = document.getElementById("helpBtn");
+    const helpOverlay = document.getElementById("helpOverlay");
+    const closeHelpBtn = document.getElementById("closeHelpBtn");
 
     let useTransparentBackground = false;
-    let labels = [];
     let colorMode = "white";
+    let labels = [];
 
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       drawCircle();
     }
-
     window.addEventListener("resize", resizeCanvas);
 
     transparentCheckbox.addEventListener("change", () => {
@@ -215,41 +344,38 @@
 
     textFileInput.addEventListener("change", (event) => {
       const file = event.target.files[0];
-      if (!file) {
-        return;
-      }
+      if (!file) return;
+
       const reader = new FileReader();
       reader.onload = (e) => {
-        const content = e.target.result;
-        labels = content
+        labels = e.target.result
           .split(/\r?\n/)
-          .map(line => line.trim())
-          .filter(line => line.length > 0);
+          .map(l => l.trim())
+          .filter(l => l);
 
         if (labels.length > 0) {
           pointsInput.value = labels.length;
         }
+        renderWordList();
         drawCircle();
       };
       reader.readAsText(file, "utf-8");
     });
 
-    function addWordFromInput() {
-      const text = wordInput.value.trim();
-      if (text.length === 0) {
-        return;
-      }
-      labels.push(text);
+    function addWord() {
+      const t = wordInput.value.trim();
+      if (!t) return;
+      labels.push(t);
       pointsInput.value = labels.length;
       wordInput.value = "";
+      renderWordList();
       drawCircle();
     }
 
-    addWordBtn.addEventListener("click", addWordFromInput);
-
-    wordInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        addWordFromInput();
+    addWordBtn.addEventListener("click", addWord);
+    wordInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        addWord();
       }
     });
 
@@ -258,40 +384,39 @@
         return labels.length;
       }
       const n = parseInt(pointsInput.value, 10);
-      if (!Number.isFinite(n) || n < 1) {
-        return 1;
-      }
-      return n;
+      return Number.isFinite(n) && n > 0 ? n : 1;
     }
 
-    function getColorsForMode(index) {
-      if (colorMode === "white") {
-        return "#ffffff";
-      }
+    function getColorsForMode(i) {
+      if (colorMode === "white") return "#ffffff";
 
       if (colorMode === "rainbow") {
-        const rainbow = [
-          "#FF0000",
-          "#FF7F00",
-          "#FFFF00",
-          "#00FF00",
-          "#0000FF",
-          "#4B0082",
-          "#8B00FF"
-        ];
-        return rainbow[index % rainbow.length];
+        const c = ["#FF0000", "#FF7F00", "#FFFF00", "#00FF00", "#0000FF", "#4B0082", "#8B00FF"];
+        return c[i % c.length];
       }
 
       if (colorMode === "blue") {
-        return index % 2 === 0 ? "#ADD8E6" : "#FFFFFF";
+        return i % 2 === 0 ? "#ADD8E6" : "#FFFFFF";
       }
 
       if (colorMode === "yellow") {
-        return index % 2 === 0 ? "#FFD700" : "#FFFACD";
+        return i % 2 === 0 ? "#FFD700" : "#FFFACD";
       }
 
       if (colorMode === "green") {
-        return index % 2 === 0 ? "#90EE90" : "#E0FFE0";
+        return i % 2 === 0 ? "#90EE90" : "#E0FFE0";
+      }
+
+      if (colorMode === "pastel1") {
+        return i % 2 === 0 ? "#F8C8DC" : "#E0E0E0";
+      }
+
+      if (colorMode === "pastel2") {
+        return i % 2 === 0 ? "#B3D4FF" : "#BEE7C8";
+      }
+
+      if (colorMode === "sand") {
+        return i % 2 === 0 ? "#D2B48C" : "#F0E6D2";
       }
 
       return "#ffffff";
@@ -302,177 +427,175 @@
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       const dim = Math.min(canvas.width, canvas.height);
       const offsetX = (canvas.width - dim) / 2;
       const offsetY = (canvas.height - dim) / 2;
       const cx = offsetX + dim / 2;
       const cy = offsetY + dim / 2;
       const radius = dim / 2 - 10;
-
-      if (!useTransparentBackground) {
-        ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }
 
       ctx.lineWidth = 2;
       ctx.strokeStyle = "#000000";
 
-      // Taartpunten tekenen
       for (let i = 0; i < n; i++) {
-        const startAngle = (i / n) * Math.PI * 2;
-        const endAngle = ((i + 1) / n) * Math.PI * 2;
-        const color = getColorsForMode(i);
+        const start = (i / n) * Math.PI * 2;
+        const end = ((i + 1) / n) * Math.PI * 2;
 
         ctx.beginPath();
         ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, radius, startAngle, endAngle);
+        ctx.arc(cx, cy, radius, start, end);
         ctx.closePath();
-        ctx.fillStyle = color;
+        ctx.fillStyle = getColorsForMode(i);
         ctx.fill();
         ctx.stroke();
       }
 
-      // Rand cirkel
       ctx.beginPath();
       ctx.arc(cx, cy, radius, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Woorden aan de buitenkant
-      if (n > 0 && labels.length > 0) {
+      if (labels.length > 0) {
         for (let i = 0; i < n; i++) {
-          const text = labels[i % labels.length];
-          drawWordInSlice(ctx, text, i, n, cx, cy, radius);
+          const text = labels[i] || "";
+          drawCurvedWord(ctx, text, i, n, cx, cy, radius);
         }
       }
     }
 
-    function drawWordInSlice(context, text, index, segments, cx, cy, radius) {
-      if (!text || text.length === 0) {
-        return;
-      }
+    function drawCurvedWord(context, text, index, n, cx, cy, radius) {
+      if (!text) return;
 
-      const startAngle = (index / segments) * Math.PI * 2;
-      const endAngle = ((index + 1) / segments) * Math.PI * 2;
+      const startAngle = (index / n) * Math.PI * 2;
+      const endAngle = ((index + 1) / n) * Math.PI * 2;
+      const wedgeAngle = endAngle - startAngle;
       const midAngle = (startAngle + endAngle) / 2;
 
-      const textRadius = radius * 0.88; // vlak bij de rand
-      const wedgeWidth = (endAngle - startAngle) * textRadius;
-
-      // Eerste schatting voor lettergrootte
-      let baseSize = Math.max(12, radius * 0.12);
+      const textRadius = radius * 0.88;
+      // eerste schatting
+      let baseSize = Math.max(10, radius * 0.12);
       context.save();
-      context.font = `bold ${baseSize}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
-      const measured = context.measureText(text);
-      const textWidth = measured.width || 1;
+      context.font = `${baseSize}px bold system-ui`;
+      const metrics = context.measureText(text);
+      const textWidth = metrics.width || 1;
 
-      const targetWidth = wedgeWidth * 0.9;
-      const factor = targetWidth / textWidth;
-      let fontSize = baseSize * factor;
+      const targetArcLength = wedgeAngle * textRadius * 0.9;
+      let scaleFactor = targetArcLength / textWidth;
 
-      fontSize = Math.max(10, Math.min(fontSize, radius * 0.2));
+      if (scaleFactor > 2) scaleFactor = 2;
+      if (scaleFactor < 0.4) scaleFactor = 0.4;
 
-      context.font = `bold ${fontSize}px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+      let fontSize = baseSize * scaleFactor;
+      fontSize = Math.min(fontSize, radius * 0.22);
+      fontSize = Math.max(fontSize, 10);
+
+      context.font = `${fontSize}px bold system-ui`;
+
+      // meet nogmaals met definitieve fontsize
+      const chars = [...text];
+      const charWidths = chars.map(ch => context.measureText(ch).width);
+      const totalWidth = charWidths.reduce((a, b) => a + b, 0) || 1;
 
       context.translate(cx, cy);
-      context.rotate(midAngle + Math.PI / 2);
-      context.translate(0, -textRadius);
 
-      context.fillStyle = "#000000";
-      context.textAlign = "center";
-      context.textBaseline = "middle";
+      let currentOffset = -totalWidth / 2;
 
-      context.fillText(text, 0, 0);
+      for (let i = 0; i < chars.length; i++) {
+        const ch = chars[i];
+        const w = charWidths[i];
+        const charCenterOffset = currentOffset + w / 2;
+
+        const angleOffset = charCenterOffset / textRadius;
+        const charAngle = midAngle + angleOffset;
+
+        context.save();
+        context.rotate(charAngle + Math.PI / 2);
+        context.translate(0, -textRadius);
+        context.fillStyle = "#000000";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(ch, 0, 0);
+        context.restore();
+
+        currentOffset += w;
+      }
 
       context.restore();
     }
 
-    function drawSquareExport(ctxExport, size, segments) {
-      ctxExport.clearRect(0, 0, size, size);
-
+    function drawExportImage(ctxExp, size, transparent) {
       const cx = size / 2;
       const cy = size / 2;
       const radius = size / 2 - 10;
+      const n = getSegmentCount();
 
-      if (!useTransparentBackground) {
-        ctxExport.fillStyle = "#ffffff";
-        ctxExport.fillRect(0, 0, size, size);
+      if (!transparent) {
+        ctxExp.fillStyle = "#ffffff";
+        ctxExp.fillRect(0, 0, size, size);
+      } else {
+        ctxExp.clearRect(0, 0, size, size);
       }
 
-      ctxExport.lineWidth = 2;
-      ctxExport.strokeStyle = "#000000";
+      ctxExp.lineWidth = 2;
+      ctxExp.strokeStyle = "#000000";
 
-      for (let i = 0; i < segments; i++) {
-        const startAngle = (i / segments) * Math.PI * 2;
-        const endAngle = ((i + 1) / segments) * Math.PI * 2;
-        const color = getColorsForMode(i);
+      for (let i = 0; i < n; i++) {
+        const start = (i / n) * Math.PI * 2;
+        const end = ((i + 1) / n) * Math.PI * 2;
 
-        ctxExport.beginPath();
-        ctxExport.moveTo(cx, cy);
-        ctxExport.arc(cx, cy, radius, startAngle, endAngle);
-        ctxExport.closePath();
-        ctxExport.fillStyle = color;
-        ctxExport.fill();
-        ctxExport.stroke();
+        ctxExp.beginPath();
+        ctxExp.moveTo(cx, cy);
+        ctxExp.arc(cx, cy, radius, start, end);
+        ctxExp.closePath();
+        ctxExp.fillStyle = getColorsForMode(i);
+        ctxExp.fill();
+        ctxExp.stroke();
       }
 
-      ctxExport.beginPath();
-      ctxExport.arc(cx, cy, radius, 0, Math.PI * 2);
-      ctxExport.stroke();
+      ctxExp.beginPath();
+      ctxExp.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctxExp.stroke();
 
-      if (segments > 0 && labels.length > 0) {
-        for (let i = 0; i < segments; i++) {
-          const text = labels[i % labels.length];
-          drawWordInSlice(ctxExport, text, i, segments, cx, cy, radius);
+      if (labels.length > 0) {
+        for (let i = 0; i < n; i++) {
+          const text = labels[i] || "";
+          drawCurvedWord(ctxExp, text, i, n, cx, cy, radius);
         }
       }
     }
 
-    generateBtn.addEventListener("click", drawCircle);
-
-    pointsInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") {
-        drawCircle();
-      }
-    });
-
     saveBtn.addEventListener("click", () => {
-      const segments = getSegmentCount();
-      if (!Number.isFinite(segments) || segments < 1) {
-        return;
-      }
+      const n = getSegmentCount();
+      if (!Number.isFinite(n) || n < 1) return;
 
       const size = Math.min(window.innerWidth, window.innerHeight);
-      const exportCanvas = document.createElement("canvas");
-      exportCanvas.width = size;
-      exportCanvas.height = size;
-      const exportCtx = exportCanvas.getContext("2d");
+      const outCanvas = document.createElement("canvas");
+      outCanvas.width = size;
+      outCanvas.height = size;
+      const outCtx = outCanvas.getContext("2d");
 
-      drawSquareExport(exportCtx, size, segments);
+      drawExportImage(outCtx, size, useTransparentBackground);
 
       const link = document.createElement("a");
-
-      const safeN = Number.isFinite(segments) && segments > 0 ? segments : "onbekend";
-
       if (useTransparentBackground) {
-        link.download = `cirkel_${safeN}_punten.png`;
-        link.href = exportCanvas.toDataURL("image/png");
+        link.download = "cirkel.png";
+        link.href = outCanvas.toDataURL("image/png");
       } else {
-        link.download = `cirkel_${safeN}_punten.jpg`;
-        link.href = exportCanvas.toDataURL("image/jpeg", 0.95);
+        link.download = "cirkel.jpg";
+        link.href = outCanvas.toDataURL("image/jpeg", 0.95);
       }
-
       link.click();
     });
 
-    // Klik op taartpunt om woord te verwijderen
-    canvas.addEventListener("click", (event) => {
-      if (labels.length === 0) {
-        return;
-      }
+    // Klik in cirkel om woord te verwijderen
+    canvas.addEventListener("click", (e) => {
+      if (labels.length === 0) return;
 
       const rect = canvas.getBoundingClientRect();
-      const clickX = event.clientX - rect.left;
-      const clickY = event.clientY - rect.top;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
       const dim = Math.min(canvas.width, canvas.height);
       const offsetX = (canvas.width - dim) / 2;
@@ -481,32 +604,79 @@
       const cy = offsetY + dim / 2;
       const radius = dim / 2 - 10;
 
-      const dx = clickX - cx;
-      const dy = clickY - cy;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      const dx = x - cx;
+      const dy = y - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
 
-      if (distance > radius) {
-        return;
-      }
+      if (dist > radius) return;
 
       let angle = Math.atan2(dy, dx);
-      if (angle < 0) {
-        angle += Math.PI * 2;
-      }
+      if (angle < 0) angle += Math.PI * 2;
 
-      const segments = labels.length;
-      const sliceAngle = (Math.PI * 2) / segments;
+      const seg = labels.length;
+      const sliceAngle = (Math.PI * 2) / seg;
       const index = Math.floor(angle / sliceAngle);
 
       if (index >= 0 && index < labels.length) {
         labels.splice(index, 1);
-        if (labels.length > 0) {
-          pointsInput.value = labels.length;
-        }
+        pointsInput.value = labels.length;
+        renderWordList();
         drawCircle();
       }
     });
 
+    function renderWordList() {
+      wordListElement.innerHTML = "";
+      labels.forEach((word, index) => {
+        const li = document.createElement("li");
+        const spanIndex = document.createElement("span");
+        spanIndex.className = "word-index";
+        spanIndex.textContent = index + 1;
+        const spanText = document.createElement("span");
+        spanText.textContent = word;
+
+        li.appendChild(spanIndex);
+        li.appendChild(spanText);
+        li.dataset.index = index.toString();
+
+        li.addEventListener("click", () => {
+          const idx = parseInt(li.dataset.index, 10);
+          if (!Number.isNaN(idx)) {
+            labels.splice(idx, 1);
+            pointsInput.value = labels.length;
+            renderWordList();
+            drawCircle();
+          }
+        });
+
+        wordListElement.appendChild(li);
+      });
+    }
+
+    // Help overlay
+    helpBtn.addEventListener("click", () => {
+      helpOverlay.style.display = "flex";
+    });
+
+    closeHelpBtn.addEventListener("click", () => {
+      helpOverlay.style.display = "none";
+    });
+
+    helpOverlay.addEventListener("click", (e) => {
+      if (e.target === helpOverlay) {
+        helpOverlay.style.display = "none";
+      }
+    });
+
+    generateBtn.addEventListener("click", drawCircle);
+    pointsInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        drawCircle();
+      }
+    });
+
+    // init
+    renderWordList();
     resizeCanvas();
   </script>
 </body>
