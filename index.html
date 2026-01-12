@@ -381,14 +381,14 @@
     let colorMode = "white";
     let labels = [];
 
-    // Standaard fontstack, met Kermit als eerste poging
-    let currentFontStack = '"Kermit", Arial, sans-serif';
+    // Alleen de font-family stack, geschikt voor CSS en canvas
+    let currentFontFamily = '"Kermit", Arial, sans-serif';
 
-    function applyFontStack() {
-      document.body.style.fontFamily = currentFontStack;
-      controls.style.fontFamily = currentFontStack;
-      helpOverlay.style.fontFamily = currentFontStack;
-      if (helpBox) helpBox.style.fontFamily = currentFontStack;
+    function applyFontFamily() {
+      document.body.style.fontFamily = currentFontFamily;
+      controls.style.fontFamily = currentFontFamily;
+      helpOverlay.style.fontFamily = currentFontFamily;
+      if (helpBox) helpBox.style.fontFamily = currentFontFamily;
       drawCircle();
     }
 
@@ -396,24 +396,24 @@
       const value = fontSelect.value;
       switch (value) {
         case "kermit":
-          currentFontStack = '"Kermit", Arial, sans-serif';
+          currentFontFamily = '"Kermit", Arial, sans-serif';
           break;
         case "poppins":
-          currentFontStack = '"Poppins", Arial, sans-serif';
+          currentFontFamily = '"Poppins", Arial, sans-serif';
           break;
         case "quicksand":
-          currentFontStack = '"Quicksand", Arial, sans-serif';
+          currentFontFamily = '"Quicksand", Arial, sans-serif';
           break;
         case "questrial":
-          currentFontStack = '"Questrial", Arial, sans-serif';
+          currentFontFamily = '"Questrial", Arial, sans-serif';
           break;
         case "bree":
-          currentFontStack = '"Bree Serif", serif';
+          currentFontFamily = '"Bree Serif", serif';
           break;
         default:
-          currentFontStack = '"Poppins", Arial, sans-serif';
+          currentFontFamily = '"Poppins", Arial, sans-serif';
       }
-      applyFontStack();
+      applyFontFamily();
     });
 
     function resizeCanvas() {
@@ -516,16 +516,16 @@
     }
 
     // Berekent de maximaal mogelijke fontgrootte zodat het woord de boog zo veel mogelijk opvult
-    function computeFontSizeForWedge(context, text, radius, wedgeAngle, fontStack) {
+    function computeFontSizeForWedge(context, text, radius, wedgeAngle, fontFamily) {
       const textRadius = radius * 0.88;
       const maxArcLength = wedgeAngle * textRadius * 0.9;
 
-      let maxFont = Math.max(12, radius * 0.30);
+      let maxFont = Math.max(12, radius * 0.35);
       let minFont = Math.max(8, radius * 0.10);
 
       let fontSize = maxFont;
       while (fontSize > minFont) {
-        context.font = `${fontSize}px bold ${fontStack}`;
+        context.font = `bold ${fontSize}px ${fontFamily}`;
         const width = context.measureText(text).width;
         if (width <= maxArcLength) {
           break;
@@ -591,8 +591,8 @@
 
       context.save();
 
-      const fontSize = computeFontSizeForWedge(context, text, radius, wedgeAngle, currentFontStack);
-      context.font = `${fontSize}px bold ${currentFontStack}`;
+      const fontSize = computeFontSizeForWedge(context, text, radius, wedgeAngle, currentFontFamily);
+      context.font = `bold ${fontSize}px ${currentFontFamily}`;
 
       const chars = [...text];
       const charWidths = chars.map(ch => context.measureText(ch).width);
@@ -782,7 +782,7 @@
 
     renderWordList();
     resizeCanvas();
-    applyFontStack();
+    applyFontFamily();
   </script>
 </body>
 </html>
