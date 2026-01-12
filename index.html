@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Cirkel verdelen in taartpunten</title>
+
+  <!-- Webfonts voor consistente weergave op alle apparaten -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&family=Quicksand:wght@400;700&family=Questrial&family=Bree+Serif&display=swap" rel="stylesheet">
+
   <style>
     html, body {
       margin: 0;
@@ -251,18 +255,10 @@
       <label for="fontSelect">Kies lettertype:</label>
       <select id="fontSelect">
         <option value="kermit">Kermit (indien beschikbaar)</option>
-        <option value="arial">Arial</option>
-        <option value="comic">Comic Sans MS</option>
-        <option value="verdana">Verdana</option>
-        <option value="poppins">Poppins</option>
-        <option value="glacial">Glacial Indifference</option>
-        <option value="questrial">Questrial</option>
-        <option value="bree">Bree Serif</option>
-        <option value="codec">Codec Pro</option>
-        <option value="now">Now</option>
-        <option value="quicksand">Quicksand</option>
-        <option value="cocomat">Cocomat Pro</option>
-        <option value="mandani">Mandani Arabic</option>
+        <option value="poppins">Poppins (webfont)</option>
+        <option value="quicksand">Quicksand (webfont)</option>
+        <option value="questrial">Questrial (webfont)</option>
+        <option value="bree">Bree Serif (webfont)</option>
       </select>
     </div>
 
@@ -347,7 +343,7 @@
         <li><strong>Aantal punten</strong>: aantal segmenten als er geen woorden zijn. Als er woorden zijn, bepaalt de lijst met woorden het aantal punten.</li>
         <li><strong>Genereer</strong>: tekent of ververst de cirkel met de huidige instellingen.</li>
         <li><strong>Sla op</strong>: slaat een vierkante afbeelding op. Bij transparant vinkje is dit een PNG met transparante buitenrand, anders een JPG met witte achtergrond.</li>
-        <li><strong>Lettertype</strong>: kies welk lettertype wordt gebruikt in het menu en in het rad. Werkt alleen als het lettertype op het apparaat aanwezig is.</li>
+        <li><strong>Lettertype</strong>: kies welk lettertype wordt gebruikt in het menu en in het rad. Webfonts werken altijd, Kermit alleen als die op het apparaat staat.</li>
         <li><strong>Kleurmodus</strong>: kies de kleurstelling van de taartpunten. De woorden blijven gelijk.</li>
         <li><strong>Transparant bij opslaan</strong>: bepaalt of de opgeslagen afbeelding een transparante achtergrond heeft. Op het scherm blijft de achtergrond zwart.</li>
         <li><strong>Nieuw woord + Voeg toe</strong>: voeg een woord toe als extra taartpunt. Enter in het tekstvak werkt ook.</li>
@@ -384,6 +380,8 @@
     let useTransparentBackground = false;
     let colorMode = "white";
     let labels = [];
+
+    // Standaard fontstack, met Kermit als eerste poging
     let currentFontStack = '"Kermit", Arial, sans-serif';
 
     function applyFontStack() {
@@ -400,20 +398,11 @@
         case "kermit":
           currentFontStack = '"Kermit", Arial, sans-serif';
           break;
-        case "arial":
-          currentFontStack = 'Arial, sans-serif';
-          break;
-        case "comic":
-          currentFontStack = '"Comic Sans MS", Arial, sans-serif';
-          break;
-        case "verdana":
-          currentFontStack = 'Verdana, Arial, sans-serif';
-          break;
         case "poppins":
           currentFontStack = '"Poppins", Arial, sans-serif';
           break;
-        case "glacial":
-          currentFontStack = '"Glacial Indifference", Arial, sans-serif';
+        case "quicksand":
+          currentFontStack = '"Quicksand", Arial, sans-serif';
           break;
         case "questrial":
           currentFontStack = '"Questrial", Arial, sans-serif';
@@ -421,23 +410,8 @@
         case "bree":
           currentFontStack = '"Bree Serif", serif';
           break;
-        case "codec":
-          currentFontStack = '"Codec Pro", Arial, sans-serif';
-          break;
-        case "now":
-          currentFontStack = '"Now", Arial, sans-serif';
-          break;
-        case "quicksand":
-          currentFontStack = '"Quicksand", Arial, sans-serif';
-          break;
-        case "cocomat":
-          currentFontStack = '"Cocomat Pro", Arial, sans-serif';
-          break;
-        case "mandani":
-          currentFontStack = '"Mandani Arabic", Arial, sans-serif';
-          break;
         default:
-          currentFontStack = '"Kermit", Arial, sans-serif';
+          currentFontStack = '"Poppins", Arial, sans-serif';
       }
       applyFontStack();
     });
@@ -541,6 +515,27 @@
       return "#ffffff";
     }
 
+    // Berekent de maximaal mogelijke fontgrootte zodat het woord de boog zo veel mogelijk opvult
+    function computeFontSizeForWedge(context, text, radius, wedgeAngle, fontStack) {
+      const textRadius = radius * 0.88;
+      const maxArcLength = wedgeAngle * textRadius * 0.9;
+
+      let maxFont = Math.max(12, radius * 0.30);
+      let minFont = Math.max(8, radius * 0.10);
+
+      let fontSize = maxFont;
+      while (fontSize > minFont) {
+        context.font = `${fontSize}px bold ${fontStack}`;
+        const width = context.measureText(text).width;
+        if (width <= maxArcLength) {
+          break;
+        }
+        fontSize -= 1;
+      }
+      if (fontSize < minFont) fontSize = minFont;
+      return fontSize;
+    }
+
     function drawCircle() {
       const n = getSegmentCount();
 
@@ -593,22 +588,10 @@
       const midAngle = (startAngle + endAngle) / 2;
 
       const textRadius = radius * 0.88;
-      let baseSize = Math.max(10, radius * 0.12);
+
       context.save();
-      context.font = `${baseSize}px bold ${currentFontStack}`;
-      const metrics = context.measureText(text);
-      const textWidth = metrics.width || 1;
 
-      const targetArcLength = wedgeAngle * textRadius * 0.9;
-      let scaleFactor = targetArcLength / textWidth;
-
-      if (scaleFactor > 2) scaleFactor = 2;
-      if (scaleFactor < 0.4) scaleFactor = 0.4;
-
-      let fontSize = baseSize * scaleFactor;
-      fontSize = Math.min(fontSize, radius * 0.22);
-      fontSize = Math.max(fontSize, 10);
-
+      const fontSize = computeFontSizeForWedge(context, text, radius, wedgeAngle, currentFontStack);
       context.font = `${fontSize}px bold ${currentFontStack}`;
 
       const chars = [...text];
@@ -789,6 +772,13 @@
         drawCircle();
       }
     });
+
+    // Na laden van webfonts nog een keer netjes hertekenen
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        drawCircle();
+      });
+    }
 
     renderWordList();
     resizeCanvas();
