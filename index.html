@@ -9,7 +9,7 @@
       padding: 0;
       height: 100%;
       background: #000000;
-      font-family: Arial, sans-serif;
+      font-family: "Kermit", Arial, sans-serif;
     }
 
     #circleCanvas {
@@ -32,10 +32,11 @@
       flex-direction: column;
       gap: 10px;
       font-size: 13px;
-      width: 320px;
+      width: 360px;
       max-height: calc(100vh - 20px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       overflow: hidden;
+      font-family: inherit;
     }
 
     .controls h2 {
@@ -63,14 +64,14 @@
       width: 80px;
       padding: 4px;
       font-size: 13px;
-      font-family: Arial, sans-serif;
+      font-family: inherit;
     }
 
     .controls input[type="text"] {
       flex: 1;
       padding: 4px;
       font-size: 13px;
-      font-family: Arial, sans-serif;
+      font-family: inherit;
     }
 
     .controls button {
@@ -81,7 +82,7 @@
       border: 1px solid #333333;
       background: #f5f5f5;
       transition: transform 0.05s ease, box-shadow 0.05s ease, filter 0.1s ease;
-      font-family: Arial, sans-serif;
+      font-family: inherit;
     }
 
     .controls button:hover {
@@ -169,7 +170,7 @@
       align-items: center;
       justify-content: center;
       z-index: 30;
-      font-family: Arial, sans-serif;
+      font-family: inherit;
     }
 
     #helpBox {
@@ -181,7 +182,7 @@
       overflow-y: auto;
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
       font-size: 13px;
-      font-family: Arial, sans-serif;
+      font-family: inherit;
     }
 
     #helpBox h2 {
@@ -218,6 +219,13 @@
     .footer a:hover {
       text-decoration: underline;
     }
+
+    select {
+      font-family: inherit;
+      font-size: 12px;
+      padding: 3px;
+      max-width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -236,6 +244,26 @@
     <div class="row">
       <button id="generateBtn">Genereer</button>
       <button id="saveBtn">Sla op</button>
+    </div>
+
+    <h3>Lettertype</h3>
+    <div class="row">
+      <label for="fontSelect">Kies lettertype:</label>
+      <select id="fontSelect">
+        <option value="kermit">Kermit (indien beschikbaar)</option>
+        <option value="arial">Arial</option>
+        <option value="comic">Comic Sans MS</option>
+        <option value="verdana">Verdana</option>
+        <option value="poppins">Poppins</option>
+        <option value="glacial">Glacial Indifference</option>
+        <option value="questrial">Questrial</option>
+        <option value="bree">Bree Serif</option>
+        <option value="codec">Codec Pro</option>
+        <option value="now">Now</option>
+        <option value="quicksand">Quicksand</option>
+        <option value="cocomat">Cocomat Pro</option>
+        <option value="mandani">Mandani Arabic</option>
+      </select>
     </div>
 
     <h3>Kleurmodus</h3>
@@ -319,6 +347,7 @@
         <li><strong>Aantal punten</strong>: aantal segmenten als er geen woorden zijn. Als er woorden zijn, bepaalt de lijst met woorden het aantal punten.</li>
         <li><strong>Genereer</strong>: tekent of ververst de cirkel met de huidige instellingen.</li>
         <li><strong>Sla op</strong>: slaat een vierkante afbeelding op. Bij transparant vinkje is dit een PNG met transparante buitenrand, anders een JPG met witte achtergrond.</li>
+        <li><strong>Lettertype</strong>: kies welk lettertype wordt gebruikt in het menu en in het rad. Werkt alleen als het lettertype op het apparaat aanwezig is.</li>
         <li><strong>Kleurmodus</strong>: kies de kleurstelling van de taartpunten. De woorden blijven gelijk.</li>
         <li><strong>Transparant bij opslaan</strong>: bepaalt of de opgeslagen afbeelding een transparante achtergrond heeft. Op het scherm blijft de achtergrond zwart.</li>
         <li><strong>Nieuw woord + Voeg toe</strong>: voeg een woord toe als extra taartpunt. Enter in het tekstvak werkt ook.</li>
@@ -348,10 +377,70 @@
     const helpBtn = document.getElementById("helpBtn");
     const helpOverlay = document.getElementById("helpOverlay");
     const closeHelpBtn = document.getElementById("closeHelpBtn");
+    const fontSelect = document.getElementById("fontSelect");
+    const controls = document.querySelector(".controls");
+    const helpBox = document.getElementById("helpBox");
 
     let useTransparentBackground = false;
     let colorMode = "white";
     let labels = [];
+    let currentFontStack = '"Kermit", Arial, sans-serif';
+
+    function applyFontStack() {
+      document.body.style.fontFamily = currentFontStack;
+      controls.style.fontFamily = currentFontStack;
+      helpOverlay.style.fontFamily = currentFontStack;
+      if (helpBox) helpBox.style.fontFamily = currentFontStack;
+      drawCircle();
+    }
+
+    fontSelect.addEventListener("change", () => {
+      const value = fontSelect.value;
+      switch (value) {
+        case "kermit":
+          currentFontStack = '"Kermit", Arial, sans-serif';
+          break;
+        case "arial":
+          currentFontStack = 'Arial, sans-serif';
+          break;
+        case "comic":
+          currentFontStack = '"Comic Sans MS", Arial, sans-serif';
+          break;
+        case "verdana":
+          currentFontStack = 'Verdana, Arial, sans-serif';
+          break;
+        case "poppins":
+          currentFontStack = '"Poppins", Arial, sans-serif';
+          break;
+        case "glacial":
+          currentFontStack = '"Glacial Indifference", Arial, sans-serif';
+          break;
+        case "questrial":
+          currentFontStack = '"Questrial", Arial, sans-serif';
+          break;
+        case "bree":
+          currentFontStack = '"Bree Serif", serif';
+          break;
+        case "codec":
+          currentFontStack = '"Codec Pro", Arial, sans-serif';
+          break;
+        case "now":
+          currentFontStack = '"Now", Arial, sans-serif';
+          break;
+        case "quicksand":
+          currentFontStack = '"Quicksand", Arial, sans-serif';
+          break;
+        case "cocomat":
+          currentFontStack = '"Cocomat Pro", Arial, sans-serif';
+          break;
+        case "mandani":
+          currentFontStack = '"Mandani Arabic", Arial, sans-serif';
+          break;
+        default:
+          currentFontStack = '"Kermit", Arial, sans-serif';
+      }
+      applyFontStack();
+    });
 
     function resizeCanvas() {
       canvas.width = window.innerWidth;
@@ -506,7 +595,7 @@
       const textRadius = radius * 0.88;
       let baseSize = Math.max(10, radius * 0.12);
       context.save();
-      context.font = `${baseSize}px bold Arial`;
+      context.font = `${baseSize}px bold ${currentFontStack}`;
       const metrics = context.measureText(text);
       const textWidth = metrics.width || 1;
 
@@ -520,7 +609,7 @@
       fontSize = Math.min(fontSize, radius * 0.22);
       fontSize = Math.max(fontSize, 10);
 
-      context.font = `${fontSize}px bold Arial`;
+      context.font = `${fontSize}px bold ${currentFontStack}`;
 
       const chars = [...text];
       const charWidths = chars.map(ch => context.measureText(ch).width);
@@ -703,6 +792,7 @@
 
     renderWordList();
     resizeCanvas();
+    applyFontStack();
   </script>
 </body>
 </html>
