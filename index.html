@@ -381,7 +381,7 @@
     let colorMode = "white";
     let labels = [];
 
-    // Alleen de font-family stack, geschikt voor CSS en canvas
+    // Font-family stack (zowel voor CSS als canvas)
     let currentFontFamily = '"Kermit", Arial, sans-serif';
 
     function applyFontFamily() {
@@ -515,25 +515,33 @@
       return "#ffffff";
     }
 
-    // Berekent de maximaal mogelijke fontgrootte zodat het woord de boog zo veel mogelijk opvult
-    function computeFontSizeForWedge(context, text, radius, wedgeAngle, fontFamily) {
+    // Bepaal één globale fontgrootte voor alle woorden,
+    // op basis van het langste woord dat nog in de taartpunt moet passen.
+    function computeGlobalFontSize(context, labels, radius, wedgeAngle, fontFamily) {
+      if (!labels || labels.length === 0) return Math.max(8, radius * 0.12);
+
       const textRadius = radius * 0.88;
       const maxArcLength = wedgeAngle * textRadius * 0.9;
 
-      let maxFont = Math.max(12, radius * 0.35);
+      // max/min grenzen voor leesbaarheid
+      let maxFont = Math.max(14, radius * 0.35);
       let minFont = Math.max(8, radius * 0.10);
 
-      let fontSize = maxFont;
-      while (fontSize > minFont) {
+      for (let fontSize = maxFont; fontSize >= minFont; fontSize -= 1) {
         context.font = `bold ${fontSize}px ${fontFamily}`;
-        const width = context.measureText(text).width;
-        if (width <= maxArcLength) {
-          break;
+        let fitsAll = true;
+        for (const word of labels) {
+          const width = context.measureText(word).width;
+          if (width > maxArcLength) {
+            fitsAll = false;
+            break;
+          }
         }
-        fontSize -= 1;
+        if (fitsAll) {
+          return fontSize;
+        }
       }
-      if (fontSize < minFont) fontSize = minFont;
-      return fontSize;
+      return minFont;
     }
 
     function drawCircle() {
@@ -572,14 +580,17 @@
       ctx.stroke();
 
       if (labels.length > 0) {
+        const wedgeAngle = (Math.PI * 2) / n;
+        const globalFontSize = computeGlobalFontSize(ctx, labels, radius, wedgeAngle, currentFontFamily);
+
         for (let i = 0; i < n; i++) {
           const text = labels[i] || "";
-          drawCurvedWord(ctx, text, i, n, cx, cy, radius);
+          drawCurvedWord(ctx, text, i, n, cx, cy, radius, globalFontSize);
         }
       }
     }
 
-    function drawCurvedWord(context, text, index, n, cx, cy, radius) {
+    function drawCurvedWord(context, text, index, n, cx, cy, radius, fontSize) {
       if (!text) return;
 
       const startAngle = (index / n) * Math.PI * 2;
@@ -591,7 +602,6 @@
 
       context.save();
 
-      const fontSize = computeFontSizeForWedge(context, text, radius, wedgeAngle, currentFontFamily);
       context.font = `bold ${fontSize}px ${currentFontFamily}`;
 
       const chars = [...text];
@@ -659,9 +669,12 @@
       ctxExp.stroke();
 
       if (labels.length > 0) {
+        const wedgeAngle = (Math.PI * 2) / n;
+        const globalFontSize = computeGlobalFontSize(ctxExp, labels, radius, wedgeAngle, currentFontFamily);
+
         for (let i = 0; i < n; i++) {
           const text = labels[i] || "";
-          drawCurvedWord(ctxExp, text, i, n, cx, cy, radius);
+          drawCurvedWord(ctxExp, text, i, n, cx, cy, radius, globalFontSize);
         }
       }
     }
